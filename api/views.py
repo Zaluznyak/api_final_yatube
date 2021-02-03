@@ -1,1 +1,52 @@
-# TODO:  Напишите свой вариант
+from rest_framework import viewsets, filters, permissions
+from django.shortcuts import get_object_or_404
+from django_filters.rest_framework import DjangoFilterBackend
+
+from .models import Group, Follow, Post
+from .serializers import (
+    PostSerializer, CommentSerializer,
+    FollowSerializer, GroupSerializer
+)
+from .permissions import IsOwnerOrReadOnly
+
+
+class PostViewSet(viewsets.ModelViewSet):
+    queryset = Post.objects.all()
+    serializer_class = PostSerializer
+    permission_classes = (IsOwnerOrReadOnly,)
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['group']
+
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)
+
+
+class CommentViewSet(viewsets.ModelViewSet):
+    serializer_class = CommentSerializer
+
+    def get_queryset(self):
+        post = get_object_or_404(Post, id=self.kwargs.get('post_id'))
+        comments = post.comments.all()
+        return comments
+
+    def perform_create(self, serializer):
+        post = get_object_or_404(Post, id=self.kwargs.get('post_id'))
+        serializer.save(author=self.request.user,
+                        post=post)
+
+
+class FollowViewSet(viewsets.ModelViewSet):
+    serializer_class = FollowSerializer
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['user__username']
+    http_method_names = ['get', 'post']
+
+    def get_queryset(self):
+        return Follow.objects.filter(following=self.request.user)
+
+
+class GroupViewSet(viewsets.ModelViewSet):
+    serializer_class = GroupSerializer
+    queryset = Group.objects.all()
+    http_method_names = ['get', 'post']
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
