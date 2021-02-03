@@ -8,7 +8,8 @@ User = get_user_model()
 
 
 class PostSerializer(serializers.ModelSerializer):
-    author = serializers.ReadOnlyField(source='author.username')
+    author = serializers.SlugRelatedField(many=False, read_only=True,
+                                          slug_field='username')
 
     class Meta:
         fields = ('id', 'text', 'author', 'pub_date', 'group')
@@ -16,7 +17,8 @@ class PostSerializer(serializers.ModelSerializer):
 
 
 class CommentSerializer(serializers.ModelSerializer):
-    author = serializers.ReadOnlyField(source='author.username')
+    author = serializers.SlugRelatedField(many=False, read_only=True,
+                                          slug_field='username')
 
     class Meta:
         fields = ('id', 'author', 'post', 'text', 'created')
