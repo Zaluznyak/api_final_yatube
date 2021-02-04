@@ -2,7 +2,7 @@ from rest_framework import viewsets, filters, permissions, mixins
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 
-from .models import Group, Follow, Post
+from .models import Group, Post
 from .serializers import (
     PostSerializer, CommentSerializer,
     FollowSerializer, GroupSerializer
